@@ -1,50 +1,46 @@
-"""import streamlit as st
-from PIL import Image
-
-# My webcam as conflict with streamlit, therefor i am using imp_img
-# Otherwise replace imp_img by camera_image
-#imp_img = "vintage-aesthetic-7131604_640.jpg"
-
-camera_image = st.camera_input("Camera")
-
-img = Image.open(camera_image)"""
-
 import streamlit as st
 from PIL import Image
+from gray_converter import img_converter
 
+# Application title
+st.title("Grayscale Image Converter")
 
+# Option to upload an image
+uploaded_image = st.file_uploader("Upload an image", type=['png', 'jpg', 'jpeg'])
 
-# Titre de l'application
-st.title("Capture d'image depuis la webcam")
-
+# Option to capture an image with the webcam
 with st.expander("Open Camera"):
-    # Utilisation de st.camera_input pour capturer l'image
-    camera_image = st.camera_input("Prenez une photo")
+    camera_image = st.camera_input("Take a photo")
 
-# Vérification si une image a été capturée
-if camera_image is not None:
-    # Ouverture de l'image capturée
-    # create a pillow image
-    img = Image.open(camera_image)
+# Variable to store the selected image
+selected_image = None
 
-    # Affichage de l'image
-    st.image(img, caption="Image capturée")
+# Check if an image has been uploaded or captured
+if uploaded_image is not None:
+    selected_image = uploaded_image
+    source = "uploaded"
+elif camera_image is not None:
+    selected_image = camera_image
+    source = "captured"
 
-    # Vous pouvez ajouter ici d'autres traitements sur l'image
-    st.write("Image capturée avec succès!")
+# Processing the selected image
+if selected_image is not None:
+    try:
+        # Open the image with Pillow
+        img = Image.open(selected_image)
 
-    # Obtention de la taille de l'image
-    width, height = img.size
+        # Display the original image
+        st.image(img, caption=f"{source.capitalize()} image")
 
-    # Affichage de la taille sans parenthèses
-    st.write(f"Taille de l'image : {width} x {height} pixels")
+        # Get and display the image size
+        width, height = img.size
+        st.write(f"Image size: {width} x {height} pixels")
+
+        # Convert the image to grayscale
+        img_converter(img)
+
+    except Exception as e:
+        st.error(f"An error occurred while processing the image: {str(e)}")
+
 else:
-    st.write("En attente de la capture d'image...")
-
-if camera_image:
-    # Convert pillow image to greyscale
-    gray_img = img.convert("L")
-
-    # Render the grayscale image on the webpage
-    st.image(gray_img, caption="Image niveaux de gris")
-
+    st.write("Waiting for an image... Please upload an image or take a photo.")
